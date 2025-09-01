@@ -1,0 +1,45 @@
+package com.example.user_backend.mapper;
+
+import java.util.List;
+import org.apache.ibatis.annotations.*;
+import com.example.user_backend.model.User;
+
+@Mapper
+public interface UserMapper {
+
+  @Select("""
+      SELECT id, name, email, active
+      FROM public.users
+      ORDER BY id
+      """)
+  List<User> findAll();
+
+  @Insert("""
+      INSERT INTO public.users(name, email, active)
+      VALUES (#{name}, #{email}, #{active})
+      """)
+  @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
+  int create(User user);
+
+  @Update("""
+      UPDATE public.users
+      SET name = #{name}, email = #{email}, active = #{active}
+      WHERE id = #{id}
+      """)
+  int update(User user);
+
+  @Delete("DELETE FROM public.users WHERE id = #{id}")
+  int delete(@Param("id") Long id);
+
+  @Select("""
+      SELECT id, name, email, active
+      FROM public.users
+      ORDER BY id
+      LIMIT #{limit} OFFSET #{offset}
+      """)
+  List<User> findPage(@Param("limit") int limit, @Param("offset") int offset);
+
+  @Select("SELECT COUNT(*) FROM public.users")
+  long countAll();
+}
+

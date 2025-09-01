@@ -1,0 +1,101 @@
+package com.example.user_backend.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.user_backend.model.User;
+import com.example.user_backend.service.UserService;
+import org.springframework.web.bind.annotation.RequestParam;
+
+
+@RestController
+@RequestMapping("/api/users")
+@Transactional
+public class UserController {
+
+	private final UserService userService;
+
+	public UserController(UserService userService) {
+		this.userService = userService;
+	}
+
+	@GetMapping("/get-all")
+	public List<User> getAll() {
+		return userService.getAllUsers();
+	}
+
+	@PostMapping("/create")
+	public boolean create(@RequestBody Object body) {
+	    if (body instanceof List) {
+	        // Nếu nhận mảng user []
+	        @SuppressWarnings("unchecked")
+	        List<Map<String, Object>> userList = (List<Map<String, Object>>) body;
+	        int total = 0;
+	        for (Map<String, Object> item : userList) {
+	            User user = new User();
+	            user.setName((String) item.get("name"));
+	            user.setEmail((String) item.get("email"));
+	            user.setActive((Boolean) item.get("active"));
+	            total += userService.create(user);
+	        }
+	        return total > 0;
+	    } else if (body instanceof Map) {
+	        // Nếu nhận 1 object user {}
+	        Map<String, Object> item = (Map<String, Object>) body;
+	        User user = new User();
+	        user.setName((String) item.get("name"));
+	        user.setEmail((String) item.get("email"));
+	        user.setActive((Boolean) item.get("active"));
+	        return userService.create(user) > 0;
+	    }
+	    return false;
+	}
+
+	@PostMapping("/update")
+	public boolean update(@RequestBody User user) {
+		return userService.update(user) > 0;
+	}
+
+	@PostMapping("/delete")
+	public boolean delete(@RequestBody User user) {
+		return user.getId() != null && userService.delete(user.getId()) > 0;
+	}
+	@GetMapping("/get-page")
+	public PageRes<User> getPage(
+	        @RequestParam(defaultValue = "1") int page,
+	        @RequestParam(defaultValue = "5") int size) {
+
+	    List<User> items = userService.getPageItems(page, size);
+	    long total = userService.countUsers();
+	    long totalPages = (long) Math.ceil((double) total / size);
+
+	    return new PageRes<>(items, total, totalPages, page, size);
+	}
+}
+
+//+ ADD: DTO trả về cho phân trang
+public static class PageRes<T> {
+ public List<T> items;
+ public long total;
+ public long totalPages;
+ public int page;
+ public int size;
+
+ public PageRes(List<T> items, long total, long totalPages, int page, int size) {
+     this.items = items;
+     this.total = total;
+     this.totalPages = totalPages;
+     this.page = page;
+     this.size = size;
+ }
+}
+
+
+

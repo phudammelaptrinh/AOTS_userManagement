@@ -1,0 +1,13 @@
+spring.application.name=user-backend
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/tmdt
+spring.datasource.username=postgres
+spring.datasource.password=your_password
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# MyBatis config
+mybatis.configuration.map-underscore-to-camel-case=true
+
+# Log SQL
+logging.level.org.mybatis=DEBUG
+logging.level.jdbc.sqlonly=DEBUG

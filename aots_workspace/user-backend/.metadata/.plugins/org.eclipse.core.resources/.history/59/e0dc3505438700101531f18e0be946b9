@@ -1,0 +1,33 @@
+package com.example.user_backend.service;
+
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.example.user_backend.mapper.UserMapper;
+import com.example.user_backend.model.User;
+
+@Service
+public class UserService {
+	private final UserMapper userMapper;
+
+	public UserService(UserMapper userMapper) {
+		this.userMapper = userMapper;
+	}
+
+	public List<User> getAllUsers() {
+		return userMapper.findAll();
+	}
+
+	public int create(User user) {
+		return userMapper.create(user);
+	}
+
+	public int update(User user) {
+		return userMapper.update(user);
+	}
+
+	public int delete(Long id) {
+		return userMapper.delete(id);
+	}
+}

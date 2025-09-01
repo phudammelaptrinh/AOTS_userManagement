@@ -1,0 +1,33 @@
+package com.example.user_backend.mapper;
+
+import java.util.List;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Param;
+
+import com.example.user_backend.model.User;
+
+@Mapper
+public class UserMapper {
+	@Select("SELECT id, name, email, active FROM users ORDER BY id")
+	List<User> findAll();
+
+	@Insert("""
+			INSERT INTO users(name, email, active)
+			VALUES (#{name}, #{email}, #{active})
+			""")
+	int create(User user);
+
+	@Update("""
+			UPDATE users
+			SET name = #{name}, email = #{email}, active = #{active}
+			WHERE id = #{id}
+			""")
+	int update(User user);
+
+	@Delete("DELETE FROM users WHERE id = #{id}")
+	int delete(@Param("id") Long id);
+}

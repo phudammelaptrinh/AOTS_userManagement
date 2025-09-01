@@ -1,0 +1,23 @@
+package com.example.user_backend.mapper;
+
+@Mapper
+public class UserMapper {
+	@Select("SELECT id, name, email, active FROM users ORDER BY id")
+    List<User> findAll();
+
+    @Insert("""
+            INSERT INTO users(name, email, active)
+            VALUES (#{name}, #{email}, #{active})
+            """)
+    int create(User user);
+
+    @Update("""
+            UPDATE users
+            SET name = #{name}, email = #{email}, active = #{active}
+            WHERE id = #{id}
+            """)
+    int update(User user);
+
+    @Delete("DELETE FROM users WHERE id = #{id}")
+    int delete(@Param("id") Long id);
+}

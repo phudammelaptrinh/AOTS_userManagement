@@ -1,0 +1,40 @@
+package com.example.user_backend.controller;
+
+import com.example.user_backend.model.User;
+import com.example.user_backend.service.UserService;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/users")
+@Transactional
+public class UserController {
+
+    private final UserService userService;
+
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/get-all")
+    public List<User> getAll() {
+        return userService.getAllUsers();
+    }
+
+    @PostMapping("/create")
+    public boolean create(@RequestBody User user) {
+        return userService.create(user) > 0;
+    }
+
+    @PostMapping("/update")
+    public boolean update(@RequestBody User user) {
+        return userService.update(user) > 0;
+    }
+
+    @PostMapping("/delete")
+    public boolean delete(@RequestBody User user) {
+        return user.getId() != null && userService.delete(user.getId()) > 0;
+    }
+}
