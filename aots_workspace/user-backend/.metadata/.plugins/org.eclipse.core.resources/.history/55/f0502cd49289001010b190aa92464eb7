@@ -1,0 +1,86 @@
+package com.example.user_backend.controller;
+
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+import com.example.user_backend.model.User;
+import com.example.user_backend.service.UserService;
+
+@RestController
+@RequestMapping("/api/users")
+@Transactional
+public class UserController {
+
+	private final UserService userService;
+
+	public UserController(UserService userService) {
+		this.userService = userService;
+	}
+
+	@GetMapping("/get-all")
+	public List<User> getAll() {
+		return userService.getAllUsers();
+	}
+
+	@PostMapping("/create")
+	@SuppressWarnings("unchecked")
+	public boolean create(@RequestBody Object body) {
+		if (body instanceof List) {
+			List<Map<String, Object>> userList = (List<Map<String, Object>>) body;
+			int total = 0;
+			for (Map<String, Object> item : userList) {
+				User u = new User();
+				u.setName((String) item.get("name"));
+				u.setEmail((String) item.get("email"));
+				u.setActive((Boolean) item.get("active"));
+				total += userService.create(u);
+			}
+			return total > 0;
+		} else if (body instanceof Map) {
+			Map<String, Object> item = (Map<String, Object>) body;
+			User u = new User();
+			u.setName((String) item.get("name"));
+			u.setEmail((String) item.get("email"));
+			u.setActive((Boolean) item.get("active"));
+			return userService.create(u) > 0;
+		}
+		return false;
+	}
+
+	@PostMapping("/update")
+	public boolean update(@RequestBody User user) {
+		return userService.update(user) > 0;
+	}
+
+	@PostMapping("/delete")
+	public boolean delete(@RequestBody User user) {
+		return user.getId() != null && userService.delete(user.getId()) > 0;
+	}
+
+	//  Navigator 
+	@GetMapping("/get-page")
+	public ResponseEntity<List<User>> getPage(
+	    @RequestParam(name = "page", defaultValue = "1") int page,
+	    @RequestParam(name = "size", defaultValue = "5") int size) {
+
+	    List<User> items = userService.getPageItems(page, size);
+	    long total = userService.countUsers();
+	    long totalPages = (long) Math.ceil((double) total / size);
+
+	    HttpHeaders h = new HttpHeaders();
+	    h.add("X-Total-Count", String.valueOf(total));
+	    h.add("X-Total-Pages", String.valueOf(totalPages));
+	    h.add("X-Page", String.valueOf(page));
+	    h.add("X-Size", String.valueOf(size));
+	    return new ResponseEntity<>(items, h, HttpStatus.OK);
+	}
+
+
+	
+}

@@ -1,0 +1,23 @@
+spring.application.name=user-backend
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/tmdt
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# MyBatis config
+mybatis.configuration.map-underscore-to-camel-case=true
+
+# Log SQL
+logging.level.org.mybatis=DEBUG
+logging.level.jdbc.sqlonly=DEBUG
+
+# Hi\u1EC7n chi ti\u1EBFt l\u1ED7i ra response (dev)
+server.error.include-message=always
+server.error.include-binding-errors=always
+server.error.include-stacktrace=always
+
+# Log SQL
+logging.level.org.mybatis=DEBUG
+logging.level.org.springframework.jdbc.core=DEBUG
+logging.level.org.springframework.jdbc.core.StatementCreatorUtils=TRACE
