@@ -4,7 +4,7 @@ import * as React from "react";
 import UserForm from "../components/UserForm";
 import UserList, { User } from "../components/UserList";
 import { userApi } from "../components/api/UserApi";
-import { Box, Pagination, Stack, Snackbar, Alert } from "@mui/material";
+import { Box, Pagination, Stack, Snackbar, Alert, CircularProgress } from "@mui/material";
 
 export default function UserHome() {
   const [users, setUsers] = React.useState<User[]>([]);
@@ -25,6 +25,8 @@ export default function UserHome() {
         const res = await userApi.getPage(p, size);
         setUsers(res.items as User[]);
         setTotalPages(res.totalPages || 1);
+      } catch (err) {
+        setToast({ open: true, msg: "Lỗi khi tải dữ liệu người dùng!", type: "error" });
       } finally {
         setLoading(false);
       }
@@ -36,39 +38,46 @@ export default function UserHome() {
     fetchPage(page);
   }, [fetchPage, page]);
 
-  // ✅ NHẬN user đã tạo từ Form, không gọi API create ở Home nữa
+  // ✅ nhận user mới từ Form
   const handleAdded = React.useCallback(
     (created: User) => {
       setToast({ open: true, msg: "Thêm người dùng thành công!", type: "success" });
 
       if (page === 1 && users.length < size) {
-        // prepend ngay + giữ đúng size
-        setUsers(prev => [created, ...prev].slice(0, size));
+        setUsers((prev) => [created, ...prev].slice(0, size));
       } else {
-        // chuyển về trang 1, useEffect tự fetch
-        setPage(1);
+        setPage(1); // useEffect sẽ tự fetch
       }
     },
-    [page, users.length, size]
+    [page, users, size]
   );
 
   const toggleUser = React.useCallback(
     async (id: number) => {
       const u = users.find((x) => x.id === id);
       if (!u) return;
-      await userApi.update(id, { ...u, active: !u.active });
-      await fetchPage(page);
+      try {
+        await userApi.update(id, { ...u, active: !u.active });
+        await fetchPage(page);
+      } catch (err) {
+        setToast({ open: true, msg: "Không thể cập nhật trạng thái người dùng!", type: "error" });
+      }
     },
     [users, page, fetchPage]
   );
 
   const deleteUser = React.useCallback(
     async (id: number) => {
-      await userApi.delete(id);
-      if (users.length === 1 && page > 1) {
-        setPage(page - 1); // useEffect sẽ fetch trang mới
-      } else {
-        await fetchPage(page);
+      try {
+        await userApi.delete(id);
+        if (users.length === 1 && page > 1) {
+          setPage(page - 1);
+        } else {
+          await fetchPage(page);
+        }
+        setToast({ open: true, msg: "Đã xóa người dùng.", type: "success" });
+      } catch (err) {
+        setToast({ open: true, msg: "Xóa người dùng thất bại!", type: "error" });
       }
     },
     [users.length, page, fetchPage]
@@ -78,11 +87,13 @@ export default function UserHome() {
     <>
       <h1 style={{ textAlign: "center", marginTop: "2rem" }}>Quản lý người dùng</h1>
 
-      {/* 🔧 Đổi sang onAdded để khớp với UserForm */}
+      {/* Form tạo mới */}
       <UserForm onAdded={handleAdded} />
 
       {loading ? (
-        <div style={{ textAlign: "center", marginTop: 16 }}>Đang tải…</div>
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+          <CircularProgress />
+        </Box>
       ) : (
         <UserList users={users} onDelete={deleteUser} onToggle={toggleUser} />
       )}
@@ -97,6 +108,7 @@ export default function UserHome() {
             size="small"
             showFirstButton
             showLastButton
+            disabled={loading}
           />
         </Stack>
       </Box>
